@@ -1,0 +1,106 @@
+/* ============================================
+   CODEQUEST — DESIGN TOKENS (Bright Pinterest)
+   ============================================ */
+
+:root {
+  /* ---- Color Palette: Bright, airy, premium SaaS ---- */
+  --background: #fffdf8;
+  --background-deep: #faf7f2;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-hover: #faf7f2;
+  --text-primary: #20202a;
+  --text-secondary: #777384;
+  --text-muted: #a5a1b0;
+  --accent: #ff5c8a;
+  --accent-bright: #ff5c8a;
+  --accent-dim: rgba(255, 92, 138, 0.1);
+  --accent-glow: rgba(255, 92, 138, 0.18);
+  --success: #65d6b3;
+  --success-dim: rgba(101, 214, 179, 0.14);
+  --warning: #ffd166;
+  --warning-dim: rgba(255, 209, 102, 0.16);
+  --danger: #ff6b6b;
+  --danger-dim: rgba(255, 107, 107, 0.12);
+  --purple: #7c5cff;
+  --purple-dim: rgba(124, 92, 255, 0.12);
+  --cyan: #63b3ed;
+  --cyan-dim: rgba(99, 179, 237, 0.14);
+  --border: #eae6e0;
+  --border-strong: #ddd8d0;
+
+  /* ---- Typography ---- */
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.15;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+
+  /* ---- Spacing ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* ---- Radii ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ---- Shadows (soft, subtle) ---- */
+  --shadow-sm: 0 1px 3px rgba(32, 32, 42, 0.05);
+  --shadow-md: 0 4px 14px rgba(32, 32, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(32, 32, 42, 0.08);
+  --shadow-xl: 0 16px 40px rgba(32, 32, 42, 0.1);
+  --shadow-glow: 0 4px 20px rgba(255, 92, 138, 0.15);
+  --shadow-glow-soft: 0 4px 24px rgba(124, 92, 255, 0.1);
+
+  /* ---- Layout ---- */
+  --container-max: 1200px;
+  --container-pad: clamp(1.25rem, 4vw, 2.5rem);
+  --navbar-height: 68px;
+
+  /* ---- Transitions ---- */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Z-index ---- */
+  --z-navbar: 100;
+  --z-modal: 200;
+  --z-tooltip: 300;
+
+  /* ---- Gradients (soft, pastel) ---- */
+  --gradient-accent: linear-gradient(135deg, #ff5c8a 0%, #7c5cff 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #faf7f2 100%);
+  --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255, 92, 138, 0.08) 0%, transparent 60%);
+}

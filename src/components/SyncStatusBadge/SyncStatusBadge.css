@@ -1,0 +1,58 @@
+.sync-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.sync-icon {
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.sync-icon.spinning {
+  animation: sync-spin 1s linear infinite;
+}
+
+@keyframes sync-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Synced State */
+.sync-status-badge.sync-synced {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Syncing State */
+.sync-status-badge.sync-syncing {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Offline State */
+.sync-status-badge.sync-offline {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* Anonymous Local Play State */
+.sync-status-badge.sync-local {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
