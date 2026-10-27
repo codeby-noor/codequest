@@ -1,38 +1,73 @@
-/* ============================================
-   CODEQUEST — DESIGN TOKENS (Bright Pinterest)
-   ============================================ */
+/* ============================================================
+   CODEQUEST — DESIGN SYSTEM TOKENS
+   Modern Developer Game / Adventure Theme (Dark-First Palette)
+   ============================================================ */
 
 :root {
-  /* ---- Color Palette: Bright, airy, premium SaaS ---- */
-  --background: #fffdf8;
-  --background-deep: #faf7f2;
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --surface-hover: #faf7f2;
-  --text-primary: #20202a;
-  --text-secondary: #777384;
-  --text-muted: #a5a1b0;
-  --accent: #ff5c8a;
-  --accent-bright: #ff5c8a;
-  --accent-dim: rgba(255, 92, 138, 0.1);
-  --accent-glow: rgba(255, 92, 138, 0.18);
-  --success: #65d6b3;
-  --success-dim: rgba(101, 214, 179, 0.14);
-  --warning: #ffd166;
-  --warning-dim: rgba(255, 209, 102, 0.16);
-  --danger: #ff6b6b;
-  --danger-dim: rgba(255, 107, 107, 0.12);
-  --purple: #7c5cff;
-  --purple-dim: rgba(124, 92, 255, 0.12);
-  --cyan: #63b3ed;
-  --cyan-dim: rgba(99, 179, 237, 0.14);
-  --border: #eae6e0;
-  --border-strong: #ddd8d0;
+  /* ---- Background & Surface Hierarchy ---- */
+  --cq-bg: #0a0e17;
+  --cq-bg-deep: #05080f;
+  --cq-surface: #111827;
+  --cq-surface-elevated: #1a2234;
+  --cq-surface-card: #141c2e;
+  --cq-surface-hover: #1f293d;
+  --cq-surface-active: #28354f;
+
+  /* ---- Borders & Dividers ---- */
+  --cq-border: rgba(255, 255, 255, 0.08);
+  --cq-border-subtle: rgba(255, 255, 255, 0.05);
+  --cq-border-strong: rgba(255, 255, 255, 0.16);
+  --cq-border-accent: rgba(99, 102, 241, 0.4);
+  --cq-border-glow: rgba(99, 102, 241, 0.25);
+
+  /* ---- Text & Content Colors ---- */
+  --cq-text: #f8fafc;
+  --cq-text-primary: #f8fafc;
+  --cq-text-secondary: #94a3b8;
+  --cq-text-muted: #64748b;
+  --cq-text-dim: #475569;
+  --cq-text-inverse: #0a0e17;
+
+  /* ---- Primary Accent (Electric Indigo / Violet) ---- */
+  --cq-primary: #6366f1;
+  --cq-primary-hover: #4f46e5;
+  --cq-primary-active: #4338ca;
+  --cq-primary-light: #818cf8;
+  --cq-primary-dim: rgba(99, 102, 241, 0.14);
+  --cq-primary-glow: rgba(99, 102, 241, 0.28);
+
+  /* ---- Secondary Accent (Neon Cyan / Sky) ---- */
+  --cq-accent: #06b6d4;
+  --cq-accent-hover: #0891b2;
+  --cq-accent-dim: rgba(6, 182, 212, 0.14);
+  --cq-accent-glow: rgba(6, 182, 212, 0.25);
+
+  /* ---- Semantic Colors ---- */
+  --cq-success: #10b981;
+  --cq-success-hover: #059669;
+  --cq-success-dim: rgba(16, 185, 129, 0.14);
+  --cq-success-glow: rgba(16, 185, 129, 0.25);
+
+  --cq-warning: #f59e0b;
+  --cq-warning-hover: #d97706;
+  --cq-warning-dim: rgba(245, 158, 11, 0.14);
+  --cq-warning-glow: rgba(245, 158, 11, 0.25);
+
+  --cq-danger: #f43f5e;
+  --cq-danger-hover: #e11d48;
+  --cq-danger-dim: rgba(244, 63, 94, 0.14);
+  --cq-danger-glow: rgba(244, 63, 94, 0.25);
+
+  --cq-purple: #8b5cf6;
+  --cq-purple-dim: rgba(139, 92, 246, 0.14);
+
+  --cq-cyan: #06b6d4;
+  --cq-cyan-dim: rgba(6, 182, 212, 0.14);
 
   /* ---- Typography ---- */
-  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -50,11 +85,11 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  --line-height-tight: 1.15;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.7;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.75;
 
-  /* ---- Spacing ---- */
+  /* ---- Spacing Scale ---- */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -68,39 +103,92 @@
   --space-20: 5rem;
   --space-24: 6rem;
 
-  /* ---- Radii ---- */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
+  /* ---- Border Radii ---- */
+  --cq-radius-sm: 8px;
+  --cq-radius-md: 12px;
+  --cq-radius-lg: 16px;
+  --cq-radius-xl: 20px;
+  --cq-radius-2xl: 24px;
+  --cq-radius-full: 9999px;
 
-  /* ---- Shadows (soft, subtle) ---- */
-  --shadow-sm: 0 1px 3px rgba(32, 32, 42, 0.05);
-  --shadow-md: 0 4px 14px rgba(32, 32, 42, 0.06);
-  --shadow-lg: 0 10px 30px rgba(32, 32, 42, 0.08);
-  --shadow-xl: 0 16px 40px rgba(32, 32, 42, 0.1);
-  --shadow-glow: 0 4px 20px rgba(255, 92, 138, 0.15);
-  --shadow-glow-soft: 0 4px 24px rgba(124, 92, 255, 0.1);
+  /* Aliases */
+  --radius-sm: var(--cq-radius-sm);
+  --radius-md: var(--cq-radius-md);
+  --radius-lg: var(--cq-radius-lg);
+  --radius-xl: var(--cq-radius-xl);
+  --radius-2xl: var(--cq-radius-2xl);
+  --radius-full: var(--cq-radius-full);
 
-  /* ---- Layout ---- */
-  --container-max: 1200px;
-  --container-pad: clamp(1.25rem, 4vw, 2.5rem);
+  /* ---- Shadows & Elevation ---- */
+  --cq-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --cq-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --cq-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --cq-shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.5);
+  --cq-shadow-glow: 0 0 25px rgba(99, 102, 241, 0.22);
+  --cq-shadow-glow-cyan: 0 0 25px rgba(6, 182, 212, 0.22);
+
+  /* Aliases */
+  --shadow-sm: var(--cq-shadow-sm);
+  --shadow-md: var(--cq-shadow-md);
+  --shadow-lg: var(--cq-shadow-lg);
+  --shadow-xl: var(--cq-shadow-xl);
+  --shadow-glow: var(--cq-shadow-glow);
+  --shadow-glow-soft: 0 0 20px rgba(139, 92, 246, 0.18);
+
+  /* ---- Layout & Sizing ---- */
+  --container-max: 1240px;
+  --container-pad: clamp(1rem, 3.5vw, 2.5rem);
   --navbar-height: 68px;
 
-  /* ---- Transitions ---- */
+  /* ---- Transitions & Easing ---- */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 380ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ---- Z-index ---- */
+  /* ---- Z-Index Scale ---- */
+  --z-base: 1;
+  --z-sticky: 40;
   --z-navbar: 100;
+  --z-drawer: 150;
   --z-modal: 200;
-  --z-tooltip: 300;
+  --z-toast: 300;
+  --z-tooltip: 400;
 
-  /* ---- Gradients (soft, pastel) ---- */
-  --gradient-accent: linear-gradient(135deg, #ff5c8a 0%, #7c5cff 100%);
-  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #faf7f2 100%);
-  --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255, 92, 138, 0.08) 0%, transparent 60%);
+  /* ---- Gradients & Mesh ---- */
+  --cq-gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --cq-gradient-accent: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  --cq-gradient-surface: linear-gradient(180deg, rgba(26, 34, 52, 0.6) 0%, rgba(17, 24, 39, 0.9) 100%);
+  --cq-gradient-hero: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(99, 102, 241, 0.18) 0%, rgba(6, 182, 212, 0.05) 45%, transparent 70%);
+  --cq-gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+
+  /* ==========================================
+     BACKWARD COMPATIBILITY ALIASES
+     ========================================== */
+  --background: var(--cq-bg);
+  --background-deep: var(--cq-bg-deep);
+  --surface: var(--cq-surface);
+  --surface-elevated: var(--cq-surface-elevated);
+  --surface-hover: var(--cq-surface-hover);
+  --text-primary: var(--cq-text);
+  --text-secondary: var(--cq-text-secondary);
+  --text-muted: var(--cq-text-muted);
+  --accent: var(--cq-primary);
+  --accent-bright: var(--cq-primary-light);
+  --accent-dim: var(--cq-primary-dim);
+  --accent-glow: var(--cq-primary-glow);
+  --success: var(--cq-success);
+  --success-dim: var(--cq-success-dim);
+  --warning: var(--cq-warning);
+  --warning-dim: var(--cq-warning-dim);
+  --danger: var(--cq-danger);
+  --danger-dim: var(--cq-danger-dim);
+  --purple: var(--cq-purple);
+  --purple-dim: var(--cq-purple-dim);
+  --cyan: var(--cq-cyan);
+  --cyan-dim: var(--cq-cyan-dim);
+  --border: var(--cq-border);
+  --border-strong: var(--cq-border-strong);
+  --gradient-accent: var(--cq-gradient-accent);
+  --gradient-surface: var(--cq-gradient-surface);
+  --gradient-hero: var(--cq-gradient-hero);
 }

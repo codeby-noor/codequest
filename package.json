@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "CodeQuest — Learn coding by playing, building, solving, and progressing.",
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "bootstrap": "^5.3.3",
     "cors": "^2.8.6",

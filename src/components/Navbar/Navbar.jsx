@@ -107,20 +107,6 @@ export default function Navbar() {
               onClick={handleToggleSound}
               title={soundOn ? "Mute audio effects" : "Enable audio effects"}
               aria-label={soundOn ? "Mute sound effects" : "Unmute sound effects"}
-              style={{
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-md)",
-                padding: "0.35rem 0.6rem",
-                minWidth: "40px",
-                minHeight: "36px",
-                cursor: "pointer",
-                color: "var(--text-secondary)",
-                fontSize: "0.85rem",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
             >
               {soundOn ? "🔊" : "🔇"}
             </button>
@@ -130,21 +116,6 @@ export default function Navbar() {
                 type="button"
                 className="navbar-auth-btn"
                 onClick={openLoginModal}
-                style={{
-                  background: "rgba(99, 102, 241, 0.15)",
-                  border: "1px solid rgba(99, 102, 241, 0.35)",
-                  borderRadius: "var(--radius-md)",
-                  padding: "0.4rem 0.85rem",
-                  minHeight: "36px",
-                  cursor: "pointer",
-                  color: "#a5b4fc",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  transition: "all 0.2s",
-                }}
               >
                 <span aria-hidden="true">🛡️</span> Sign In
               </button>

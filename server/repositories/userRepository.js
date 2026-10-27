@@ -18,7 +18,9 @@ const COLLECTION_NAME = "users";
 function resolveDB(dbInstance) {
   const db = dbInstance || getDB();
   if (!db) {
-    throw new Error("Database not connected");
+    const error = new Error("Database service unavailable");
+    error.status = 503;
+    throw error;
   }
   return db;
 }

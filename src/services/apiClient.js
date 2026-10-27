@@ -29,7 +29,8 @@ export function clearAuthToken() {
 
 const API_BASE =
   process.env.REACT_APP_API_URL ||
-  (typeof window !== "undefined" && window.location.hostname === "localhost"
+  (typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? "http://localhost:5000/api"
     : "/api");
 
@@ -50,29 +51,79 @@ function getHeaders(extraHeaders = {}) {
 
 /**
  * Handle fetch response safely.
+ * Gracefully parses JSON or non-JSON (HTML/text) without crashing,
+ * mapping status codes to clear, user-friendly error messages.
  */
 async function handleResponse(response) {
-  try {
-    const data = await response.json();
-    if (!response.ok) {
-      return {
-        success: false,
-        status: response.status,
-        message: data.message || `Request failed with status ${response.status}`,
-      };
-    }
-    return {
-      success: true,
-      status: response.status,
-      ...data,
-    };
-  } catch (err) {
+  if (!response) {
     return {
       success: false,
-      status: response?.status || 500,
-      message: "Failed to parse API response",
+      status: 0,
+      message: "No response received from API server",
+      offline: true,
     };
   }
+
+  const status = response.status || 500;
+  let data = null;
+
+  try {
+    if (typeof response.json === "function") {
+      data = await response.json();
+    } else if (typeof response.text === "function") {
+      const text = await response.text();
+      data = JSON.parse(text);
+    }
+  } catch (err) {
+    // Non-JSON response (e.g. 405 Method Not Allowed HTML, or malformed proxy error)
+    let fallbackMessage = "Failed to parse API response";
+    if (status === 405) {
+      fallbackMessage = "Endpoint method not supported by server. Please verify deployment routing.";
+    } else if (status === 404) {
+      fallbackMessage = "Requested API endpoint not found.";
+    }
+    return {
+      success: false,
+      status,
+      message: fallbackMessage,
+    };
+  }
+
+  if (!response.ok) {
+    let errorMessage = "";
+    if (data && (data.message || data.error)) {
+      errorMessage = data.message || data.error;
+    } else if (status === 405) {
+      errorMessage = "Endpoint method not supported by server. Please verify deployment routing.";
+    } else if (status === 404) {
+      errorMessage = "Requested API endpoint not found.";
+    } else if (status === 401) {
+      errorMessage = "Invalid email or password.";
+    } else if (status === 403) {
+      errorMessage = "Access forbidden.";
+    } else if (status === 409) {
+      errorMessage = "An account with this email or username already exists.";
+    } else if (status === 429) {
+      errorMessage = "Too many attempts. Please wait a few minutes before trying again.";
+    } else if (status === 502 || status === 503 || status === 504) {
+      errorMessage = "Cloud service temporarily unavailable. Progress is safely saved locally.";
+    } else {
+      errorMessage = `Request failed with status ${status}`;
+    }
+
+    return {
+      success: false,
+      status,
+      message: errorMessage,
+      ...(data && typeof data === "object" ? data : {}),
+    };
+  }
+
+  return {
+    success: true,
+    status,
+    ...(data && typeof data === "object" ? data : {}),
+  };
 }
 
 /**
