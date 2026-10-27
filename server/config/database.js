@@ -48,7 +48,12 @@ async function connectDB(customUri = null, options = {}) {
     console.log(`[MongoDB] Successfully connected to database: ${DB_NAME}`);
     return { db, client, connected: true };
   } catch (err) {
-    console.warn(`[MongoDB] Connection failed: ${err.message}`);
+   console.error("[MongoDB] Connection failed", {
+  name: err.name,
+  code: err.code,
+  codeName: err.codeName,
+  message: err.message,
+});
     client = null;
     db = null;
     return {
