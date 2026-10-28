@@ -21,8 +21,9 @@ import {
   initializePlayerAndSync,
   formatCloudPayload,
   getPlayerId,
+  clearPlayerId,
 } from "../services/cloudSync";
-import { updatePlayerProgress } from "../services/apiClient";
+import { updatePlayerProgress, completeChallenge as completeChallengeApi } from "../services/apiClient";
 
 const ProgressContext = createContext(null);
 
@@ -191,7 +192,8 @@ export function ProgressProvider({ children }) {
           return prev;
         }
         let next = completeLesson(prev, lesson.id);
-        next = completeChallenge(next, lesson.challenge.id);
+        const challengeId = lesson.challenge?.id || lesson.challengeId || `${lesson.id}-challenge`;
+        next = completeChallenge(next, challengeId);
         next = addSkillProgress(next, lesson.skillId || lesson.skill || "programming", lesson.skillProgress || lesson.skillPercent || 5);
         next = updateStreak(next);
 
@@ -216,6 +218,103 @@ export function ProgressProvider({ children }) {
       });
     },
     []
+  );
+
+  /**
+   * Submit challenge completion through the server for authoritative XP, streak, and achievement verification.
+   * Gracefully falls back to offline local completion if disconnected.
+   */
+  const submitChallengeCompletion = useCallback(
+    async (challenge) => {
+      if (!challenge || !challenge.id) return { success: false, message: "Invalid challenge" };
+
+      // Check if already completed locally
+      if ((progress.completedChallenges || []).includes(challenge.id)) {
+        return { success: true, alreadyCompleted: true, awardedXp: 0 };
+      }
+
+      const metadata = {
+        lessonId: challenge.lessonId,
+        difficulty: challenge.difficulty,
+        xp: challenge.xp,
+        skillId: challenge.skillId,
+        skillProgress: challenge.skillProgress,
+      };
+
+      if (playerId) {
+        try {
+          const res = await completeChallengeApi(playerId, challenge.id, metadata);
+          if (res.success && !res.offline) {
+            // Apply server-authoritative progress
+            setProgress((prev) => {
+              const before = getLevelInfo(prev.xp);
+              let next = {
+                ...prev,
+                xp: typeof res.user?.xp === "number" ? res.user.xp : prev.xp + (res.awardedXp || challenge.xp),
+                level: typeof res.user?.level === "number" ? res.user.level : (res.level || prev.level),
+                streak: typeof res.user?.streak === "number" ? res.user.streak : (res.streakInfo?.streak || prev.streak),
+                longestStreak: typeof res.user?.longestStreak === "number" ? res.user.longestStreak : (res.streakInfo?.longestStreak || prev.longestStreak),
+                lastActiveDay: res.user?.lastActiveDay || res.streakInfo?.lastActiveDay || prev.lastActiveDay,
+                completedChallenges: Array.from(new Set([...(prev.completedChallenges || []), challenge.id])),
+                completedLessons: challenge.lessonId
+                  ? Array.from(new Set([...(prev.completedLessons || []), challenge.lessonId]))
+                  : prev.completedLessons,
+                achievements: Array.from(
+                  new Set([...(prev.achievements || []), ...(res.user?.achievements || []).map(String)])
+                ),
+              };
+
+              if (challenge.lessonId) {
+                const nextLessonId = getNextLessonId(challenge.lessonId);
+                if (nextLessonId) {
+                  next = unlockLesson(next, nextLessonId);
+                }
+              }
+
+              next = applyWorldUnlocks(next);
+              const after = getLevelInfo(next.xp);
+
+              if (after.level > before.level) {
+                setLevelUp({ from: before.level, to: after.level, title: after.title });
+              }
+
+              if (res.awardedXp > 0) {
+                setLastReward({
+                  amount: res.awardedXp,
+                  reason: challenge.title || "Challenge Completed",
+                  timestamp: Date.now(),
+                });
+              }
+
+              return next;
+            });
+
+            return res;
+          }
+        } catch (err) {
+          // Fall through to offline handling
+        }
+      }
+
+      // Offline fallback: complete locally
+      const lessonObj = {
+        id: challenge.lessonId || challenge.id,
+        challenge,
+        xp: challenge.xp || 50,
+        skillId: challenge.skillId,
+        skillProgress: challenge.skillProgress,
+        title: challenge.title || "Challenge",
+      };
+      completeLessonAndReward(lessonObj);
+
+      return {
+        success: true,
+        offline: true,
+        alreadyCompleted: false,
+        awardedXp: challenge.xp || 50,
+      };
+    },
+    [playerId, progress.completedChallenges, completeLessonAndReward]
   );
 
   const completeProjectAndReward = useCallback((project) => {
@@ -278,6 +377,7 @@ export function ProgressProvider({ children }) {
     syncStatus,
     grantXP,
     completeLessonAndReward,
+    submitChallengeCompletion,
     completeProjectAndReward,
     setProjectProgress,
     setProjectSteps,

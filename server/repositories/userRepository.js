@@ -9,6 +9,12 @@
 const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/database");
 const { validateUserData, buildUserDocument } = require("../models/userModel");
+const {
+  calculateLevel,
+  calculateStreak,
+  resolveChallengeXp,
+  evaluateEligibleAchievements,
+} = require("../services/gamificationService");
 
 const COLLECTION_NAME = "users";
 
@@ -49,6 +55,10 @@ function mergeProgressObjects(target = {}, source = {}) {
     new Set([...(target.completedLessons || []), ...(source.completedLessons || [])])
   );
 
+  const completedChallenges = Array.from(
+    new Set([...(target.completedChallenges || []), ...(source.completedChallenges || [])])
+  );
+
   const unlockedLessons = Array.from(
     new Set(["lesson-01", ...(target.unlockedLessons || []), ...(source.unlockedLessons || [])])
   );
@@ -69,22 +79,25 @@ function mergeProgressObjects(target = {}, source = {}) {
 
   const xp = Math.max(Number(target.xp) || 0, Number(source.xp) || 0);
   const streak = Math.max(Number(target.streak) || 0, Number(source.streak) || 0);
+  const longestStreak = Math.max(
+    Number(target.longestStreak) || streak,
+    Number(source.longestStreak) || 0
+  );
+  const lastActiveDay = target.lastActiveDay || source.lastActiveDay || null;
   const avatar = target.avatar || source.avatar || "⚔️";
 
-  // Level computation derived from XP
-  let level = 1;
-  if (xp >= 12000) level = 6;
-  else if (xp >= 7000) level = 5;
-  else if (xp >= 4500) level = 4;
-  else if (xp >= 2500) level = 3;
-  else if (xp >= 1000) level = 2;
+  // Level computation derived from unified level thresholds
+  const level = calculateLevel(xp);
 
   return {
     xp,
     level,
     streak,
+    longestStreak,
+    lastActiveDay,
     avatar,
     completedLessons,
+    completedChallenges,
     unlockedLessons,
     completedWorlds,
     skills: mergedSkills,
@@ -103,6 +116,7 @@ async function initIndexes(dbInstance) {
 
   await collection.createIndex({ username: 1 }, { unique: true });
   await collection.createIndex({ email: 1 }, { unique: true, sparse: true });
+  await collection.createIndex({ xp: -1, createdAt: 1 });
 }
 
 /**
@@ -250,8 +264,11 @@ async function updateUserProgress(userId, progressUpdates = {}, dbInstance) {
     "xp",
     "level",
     "streak",
+    "longestStreak",
+    "lastActiveDay",
     "avatar",
     "completedLessons",
+    "completedChallenges",
     "unlockedLessons",
     "completedWorlds",
     "skills",
@@ -348,6 +365,255 @@ async function deleteUserById(userId, dbInstance) {
   return (result.deletedCount || 0) > 0;
 }
 
+/**
+ * Atomically record a verified challenge completion for a user:
+ * - Prevents duplicate rewards for repeated submissions or refreshes
+ * - Calculates verified XP based on difficulty
+ * - Updates daily streak with UTC boundary safety
+ * - Evaluates and awards eligible achievements
+ * - Updates level based on unified thresholds
+ *
+ * @param {string|ObjectId} userId
+ * @param {object} challengeData - { id, lessonId, difficulty, xp, skillId, skillProgress }
+ * @param {object} [dbInstance]
+ * @returns {Promise<object>} Result with updated user document and award metadata
+ */
+async function recordChallengeCompletion(userId, challengeData = {}, dbInstance) {
+  const db = resolveDB(dbInstance);
+  const collection = db.collection(COLLECTION_NAME);
+  const queryId = toObjectId(userId);
+  const filter = { $or: [{ _id: queryId }, { _id: String(userId) }] };
+
+  const existingUser = await collection.findOne(filter);
+  if (!existingUser) {
+    const error = new Error("User not found");
+    error.status = 404;
+    throw error;
+  }
+
+  const challengeId = String(challengeData.id || "").trim();
+  if (!challengeId) {
+    const error = new Error("Challenge ID is required");
+    error.status = 400;
+    throw error;
+  }
+
+  const completedChallenges = Array.isArray(existingUser.completedChallenges)
+    ? existingUser.completedChallenges
+    : [];
+
+  // Check if already completed (prevent duplicate XP or duplicate rewards)
+  if (completedChallenges.includes(challengeId)) {
+    return {
+      success: true,
+      alreadyCompleted: true,
+      awardedXp: 0,
+      awardedStreak: existingUser.streak || 0,
+      longestStreak: existingUser.longestStreak || existingUser.streak || 0,
+      newlyUnlockedAchievements: [],
+      user: existingUser,
+    };
+  }
+
+  // 1. Calculate challenge XP
+  const challengeXp = resolveChallengeXp(challengeData);
+
+  // 2. Calculate daily streak with UTC boundary rules
+  const streakResult = calculateStreak({
+    currentStreak: existingUser.streak || 0,
+    longestStreak: existingUser.longestStreak || existingUser.streak || 0,
+    lastActiveDay: existingUser.lastActiveDay || null,
+  });
+
+  // 3. New challenge & lesson sets
+  const updatedChallenges = [...completedChallenges, challengeId];
+  const lessonId = challengeData.lessonId ? String(challengeData.lessonId) : null;
+  const completedLessons = Array.isArray(existingUser.completedLessons)
+    ? existingUser.completedLessons
+    : [];
+  const updatedLessons = lessonId && !completedLessons.includes(lessonId)
+    ? [...completedLessons, lessonId]
+    : completedLessons;
+
+  // 4. Update skills if provided
+  const updatedSkills = { ...(existingUser.skills || {}) };
+  if (challengeData.skillId) {
+    const currentSkill = updatedSkills[challengeData.skillId] || 0;
+    const progressInc = typeof challengeData.skillProgress === "number" ? challengeData.skillProgress : 5;
+    updatedSkills[challengeData.skillId] = Math.min(100, currentSkill + progressInc);
+  }
+
+  // 5. Evaluate achievements
+  const currentXp = Number(existingUser.xp) || 0;
+  const tempTotalXp = currentXp + challengeXp;
+  const isBoss =
+    String(challengeData.difficulty || "").toLowerCase() === "boss" ||
+    challengeId.toLowerCase().includes("boss");
+
+  const stateForAchievements = {
+    completedChallenges: updatedChallenges,
+    completedLessons: updatedLessons,
+    streak: streakResult.streak,
+    xp: tempTotalXp,
+    level: calculateLevel(tempTotalXp),
+    hasCompletedBoss: isBoss,
+  };
+
+  const existingAchievements = Array.isArray(existingUser.achievements)
+    ? existingUser.achievements
+    : [];
+  const newAchievements = evaluateEligibleAchievements(stateForAchievements, existingAchievements);
+
+  const achievementXpBonus = newAchievements.reduce((acc, ach) => acc + (ach.xp || 0), 0);
+  const finalXp = tempTotalXp + achievementXpBonus;
+  const finalLevel = calculateLevel(finalXp);
+  const finalAchievements = [
+    ...existingAchievements,
+    ...newAchievements.map((a) => a.id),
+  ];
+
+  // 6. Atomic MongoDB update
+  const now = new Date();
+  const updatePayload = {
+    $set: {
+      xp: finalXp,
+      level: finalLevel,
+      streak: streakResult.streak,
+      longestStreak: streakResult.longestStreak,
+      lastActiveDay: streakResult.lastActiveDay,
+      skills: updatedSkills,
+      achievements: finalAchievements,
+      updatedAt: now,
+    },
+    $addToSet: {
+      completedChallenges: challengeId,
+      ...(lessonId ? { completedLessons: lessonId } : {}),
+    },
+  };
+
+  let updatedUser = null;
+  if (collection.findOneAndUpdate) {
+    const updateResult = await collection.findOneAndUpdate(filter, updatePayload, {
+      returnDocument: "after",
+    });
+    updatedUser = updateResult?.value || updateResult;
+  } else {
+    await collection.updateOne(filter, updatePayload);
+    updatedUser = await collection.findOne(filter);
+  }
+
+  return {
+    success: true,
+    alreadyCompleted: false,
+    awardedXp: challengeXp + achievementXpBonus,
+    challengeXp,
+    achievementXpBonus,
+    level: finalLevel,
+    streakInfo: streakResult,
+    newlyUnlockedAchievements: newAchievements,
+    user: updatedUser,
+  };
+}
+
+/**
+ * Retrieve public leaderboard standings.
+ * Protects sensitive user data (emails, passwords, salt).
+ * Ties are broken deterministically by createdAt: 1.
+ *
+ * @param {object} options - { limit, skip, currentUserId }
+ * @param {object} [dbInstance]
+ * @returns {Promise<object>} { users, totalUsers, currentUserRank }
+ */
+async function getLeaderboardUsers({ limit = 25, skip = 0, currentUserId = null } = {}, dbInstance) {
+  const db = resolveDB(dbInstance);
+  const collection = db.collection(COLLECTION_NAME);
+
+  const safeLimit = Math.max(1, Math.min(100, Number(limit) || 25));
+  const safeSkip = Math.max(0, Number(skip) || 0);
+
+  // Safe public projection
+  const projection = {
+    username: 1,
+    avatar: 1,
+    xp: 1,
+    level: 1,
+    streak: 1,
+    achievements: 1,
+    completedChallenges: 1,
+    completedLessons: 1,
+    createdAt: 1,
+  };
+
+  const cursor = collection
+    .find({}, { projection })
+    .sort({ xp: -1, createdAt: 1 })
+    .skip(safeSkip)
+    .limit(safeLimit);
+
+  const rawUsers = await cursor.toArray();
+  const totalUsers = await collection.countDocuments({});
+
+  const users = rawUsers.map((user, idx) => {
+    const rank = safeSkip + idx + 1;
+    const isCurrent = currentUserId && String(user._id) === String(currentUserId);
+    return {
+      id: String(user._id),
+      username: user.username,
+      avatar: user.avatar || "⚔️",
+      xp: typeof user.xp === "number" ? user.xp : 0,
+      level: typeof user.level === "number" ? user.level : calculateLevel(user.xp || 0),
+      streak: typeof user.streak === "number" ? user.streak : 0,
+      achievementsCount: Array.isArray(user.achievements) ? user.achievements.length : 0,
+      completedChallengesCount: Array.isArray(user.completedChallenges)
+        ? user.completedChallenges.length
+        : Array.isArray(user.completedLessons)
+        ? user.completedLessons.length
+        : 0,
+      rank,
+      isCurrent: Boolean(isCurrent),
+    };
+  });
+
+  let currentUserRank = null;
+  if (currentUserId) {
+    const queryId = toObjectId(currentUserId);
+    const targetUser = await collection.findOne({
+      $or: [{ _id: queryId }, { _id: String(currentUserId) }],
+    });
+
+    if (targetUser) {
+      const targetXp = targetUser.xp || 0;
+      const targetCreatedAt = targetUser.createdAt || new Date(0);
+
+      // Rank = 1 + count of users with higher XP OR equal XP but earlier createdAt
+      const higherCount = await collection.countDocuments({
+        $or: [
+          { xp: { $gt: targetXp } },
+          { xp: targetXp, createdAt: { $lt: targetCreatedAt } },
+        ],
+      });
+
+      currentUserRank = {
+        id: String(targetUser._id),
+        username: targetUser.username,
+        avatar: targetUser.avatar || "⚔️",
+        xp: targetXp,
+        level: targetUser.level || calculateLevel(targetXp),
+        streak: targetUser.streak || 0,
+        rank: higherCount + 1,
+      };
+    }
+  }
+
+  return {
+    users,
+    totalUsers,
+    currentUserRank,
+    limit: safeLimit,
+    skip: safeSkip,
+  };
+}
+
 module.exports = {
   COLLECTION_NAME,
   initIndexes,
@@ -357,6 +623,8 @@ module.exports = {
   findUserByEmail,
   findUserByUsername,
   updateUserProgress,
+  recordChallengeCompletion,
+  getLeaderboardUsers,
   linkAnonymousPlayer,
   deleteUserById,
   mergeProgressObjects,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./components/Navbar/Navbar";
@@ -7,6 +7,9 @@ import LevelUpModal from "./components/LevelUpModal/LevelUpModal";
 import XpToast from "./components/XpToast/XpToast";
 import OnboardingModal from "./components/OnboardingModal/OnboardingModal";
 import AuthModal from "./components/AuthModal/AuthModal";
+import FeedbackModal from "./components/FeedbackModal/FeedbackModal";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
+import { initClientErrorMonitoring } from "./services/errorMonitoring";
 import { AuthProvider } from "./context/AuthContext";
 import { ProgressProvider } from "./context/ProgressContext";
 import Home from "./pages/Home/Home";
@@ -23,6 +26,8 @@ import ArenaSelection from "./pages/CodeArena/ArenaSelection";
 import Leaderboard from "./pages/Leaderboard/Leaderboard";
 import Achievements from "./pages/Achievements/Achievements";
 import Mentor from "./pages/Mentor/Mentor";
+import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
+import TermsOfUse from "./pages/Legal/TermsOfUse";
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -65,6 +70,8 @@ function AnimatedRoutes() {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/mentor" element={<Mentor />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfUse />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </motion.main>
@@ -73,19 +80,31 @@ function AnimatedRoutes() {
 }
 
 export default function App() {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  useEffect(() => {
+    initClientErrorMonitoring();
+  }, []);
+
   return (
-    <AuthProvider>
-      <ProgressProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Navbar />
-          <AnimatedRoutes />
-          <Footer />
-          <LevelUpModal />
-          <XpToast />
-          <OnboardingModal />
-          <AuthModal />
-        </BrowserRouter>
-      </ProgressProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ProgressProvider>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Navbar />
+            <AnimatedRoutes />
+            <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
+            <LevelUpModal />
+            <XpToast />
+            <OnboardingModal />
+            <AuthModal />
+            <FeedbackModal
+              isOpen={feedbackOpen}
+              onClose={() => setFeedbackOpen(false)}
+            />
+          </BrowserRouter>
+        </ProgressProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

@@ -16,6 +16,7 @@ import { validateUserChallenge, isHtmlCssChallenge } from "../../engine/challeng
 import { runUserCode, formatErrorForBeginner } from "../../engine/codeRunner";
 import { getCheckpoint, saveCheckpoint, clearCheckpoint } from "../../engine/checkpointEngine";
 import { useProgress } from "../../context/ProgressContext";
+import { trackEvent, ANALYTICS_EVENTS } from "../../services/analytics";
 
 /**
  * Code Arena — the full coding experience.
@@ -25,7 +26,7 @@ import { useProgress } from "../../context/ProgressContext";
 export default function CodeArenaPage() {
   const { challengeId } = useParams();
   const navigate = useNavigate();
-  const { isChallengeCompleted, isLessonUnlocked, isWorldUnlocked, completeLessonAndReward } = useProgress();
+  const { isChallengeCompleted, isLessonUnlocked, isWorldUnlocked, submitChallengeCompletion, completeLessonAndReward } = useProgress();
 
   const challenge = getArenaChallengeById(challengeId);
   const isHtmlCss = isHtmlCssChallenge(challenge);
@@ -34,6 +35,9 @@ export default function CodeArenaPage() {
   const [logs, setLogs] = useState([]);
   const [testResults, setTestResults] = useState(null);
   const [running, setRunning] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState("idle"); // "idle" | "submitting" | "correct" | "incorrect" | "network_error" | "server_error"
+  const [submissionResult, setSubmissionResult] = useState(null);
   const [terminalStatus, setTerminalStatus] = useState(null);
   const [terminalError, setTerminalError] = useState(null);
   const [hintIndex, setHintIndex] = useState(0);
@@ -47,6 +51,11 @@ export default function CodeArenaPage() {
   // Load challenge + checkpoint
   useEffect(() => {
     if (!challenge) return;
+
+    trackEvent(ANALYTICS_EVENTS.CHALLENGE_STARTED, {
+      challengeId: challenge.id,
+      difficulty: challenge.difficulty,
+    });
 
     const checkpoint = getCheckpoint(challenge.id);
     setCode(checkpoint ? checkpoint.code : challenge.starterCode);
@@ -190,30 +199,52 @@ export default function CodeArenaPage() {
     }
   }
 
-  /** Submit mission — only works when all tests pass. */
-  function handleSubmit() {
+  /** Submit mission — calls server-side verification and awards XP safely. */
+  async function handleSubmit() {
     if (!allPassed) {
+      setSubmissionStatus("incorrect");
       setShowFailed(true);
       return;
     }
 
     if (alreadyCompleted) {
-      // No duplicate rewards
+      // Prevent duplicate submission attempts while acknowledging completed status
+      setSubmissionStatus("correct");
+      setSubmissionResult({ alreadyCompleted: true, awardedXp: 0 });
       setShowComplete(true);
       return;
     }
 
-    // Complete the lesson (which also completes the challenge + grants XP)
-    const lesson = {
-      id: challenge.lessonId,
-      challenge,
-      xp: challenge.xp,
-      skillId: challenge.skillId,
-      skillProgress: challenge.skillProgress,
-    };
-    completeLessonAndReward(lesson);
-    clearCheckpoint(challenge.id);
-    setShowComplete(true);
+    setSubmitting(true);
+    setSubmissionStatus("submitting");
+
+    try {
+      const res = await submitChallengeCompletion(challenge);
+      setSubmissionResult(res);
+
+      if (res && res.success) {
+        trackEvent(ANALYTICS_EVENTS.CHALLENGE_COMPLETED, {
+          challengeId: challenge.id,
+          difficulty: challenge.difficulty,
+        });
+        setSubmissionStatus("correct");
+        clearCheckpoint(challenge.id);
+        setShowComplete(true);
+      } else if (res && res.offline) {
+        setSubmissionStatus("network_error");
+        clearCheckpoint(challenge.id);
+        setShowComplete(true);
+      } else {
+        setSubmissionStatus("server_error");
+        setShowFailed(true);
+      }
+    } catch (err) {
+      setSubmissionStatus("server_error");
+      setSubmissionResult({ message: err.message || "Failed to submit challenge" });
+      setShowFailed(true);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleReset() {
@@ -337,14 +368,47 @@ export default function CodeArenaPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-icon" aria-hidden="true">✓</div>
-              <h2>MISSION COMPLETE</h2>
-              <div className="modal-xp">+{challenge.xp} XP</div>
-              <p className="modal-title">{challenge.title}</p>
-              <div className="modal-checks">
-                <div className="modal-check">✓ Challenge solved</div>
-                <div className="modal-check">✓ Requirements completed</div>
-                <div className="modal-check">✓ Skill progress increased</div>
+              <h2>
+                {submissionResult?.alreadyCompleted
+                  ? "MISSION ALREADY COMPLETED"
+                  : "MISSION COMPLETE"}
+              </h2>
+
+              <div className="modal-xp">
+                {submissionResult?.alreadyCompleted
+                  ? "+0 XP (Previously Awarded)"
+                  : `+${submissionResult?.awardedXp || challenge.xp} XP`}
               </div>
+
+              <p className="modal-title">{challenge.title}</p>
+
+              {submissionResult?.achievementXpBonus > 0 && (
+                <div style={{ margin: "0.5rem 0", color: "var(--accent)", fontWeight: 600 }}>
+                  🌟 Includes +{submissionResult.achievementXpBonus} XP Achievement Bonus!
+                </div>
+              )}
+
+              {submissionResult?.newlyUnlockedAchievements?.length > 0 && (
+                <div style={{ margin: "0.5rem 0", padding: "0.5rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.25rem" }}>
+                    Unlocked Achievements:
+                  </div>
+                  {submissionResult.newlyUnlockedAchievements.map((ach) => (
+                    <div key={ach.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", color: "var(--text-primary)" }}>
+                      <span>{ach.icon || "🏆"}</span>
+                      <strong>{ach.title}</strong>
+                      <span style={{ color: "var(--accent)" }}>+{ach.xp} XP</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="modal-checks">
+                <div className="modal-check">✓ Verified solution evaluated</div>
+                <div className="modal-check">✓ All tests and requirements passed</div>
+                <div className="modal-check">✓ Progress saved securely</div>
+              </div>
+
               <div className="modal-actions">
                 <Button
                   variant="primary"
@@ -361,7 +425,7 @@ export default function CodeArenaPage() {
         )}
       </AnimatePresence>
 
-      {/* Failed submission modal */}
+      {/* Submission feedback / failure modal */}
       <AnimatePresence>
         {showFailed && (
           <motion.div
@@ -375,27 +439,59 @@ export default function CodeArenaPage() {
               className="modal-card"
               role="dialog"
               aria-modal="true"
-              aria-label="Mission not complete"
+              aria-label="Submission feedback"
               initial={{ scale: 0.9, y: 20, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.9, y: 20, opacity: 0 }}
               transition={{ duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="modal-icon" aria-hidden="true">⚠️</div>
-              <h2>MISSION NOT COMPLETE</h2>
+              <div className="modal-icon" aria-hidden="true">
+                {submissionStatus === "server_error" ? "⚠️" : "❌"}
+              </div>
+              <h2>
+                {submissionStatus === "server_error"
+                  ? "SUBMISSION SERVICE NOTICE"
+                  : "MISSION NOT COMPLETE"}
+              </h2>
+
               <p className="modal-title" style={{ marginTop: "0.5rem" }}>
-                {testResults
-                  ? `${testResults.filter((r) => r.success).length} / ${testResults.length} tests passed.`
-                  : "Run your code first to see test results."}
+                {submissionStatus === "server_error"
+                  ? submissionResult?.message || "Cloud server was temporarily unreachable. Your code is preserved safely."
+                  : testResults
+                  ? `${testResults.filter((r) => r.success).length} / ${testResults.length} requirements met.`
+                  : "Run your code first to verify requirements before submitting."}
               </p>
+
+              {testResults && testResults.some((r) => !r.success) && (
+                <div style={{ textAlign: "left", margin: "1rem 0", background: "rgba(255,255,255,0.04)", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem" }}>
+                  <div style={{ fontWeight: 600, color: "var(--danger)", marginBottom: "0.5rem" }}>
+                    Unsatisfied Requirements:
+                  </div>
+                  {testResults
+                    .filter((r) => !r.success)
+                    .slice(0, 3)
+                    .map((r, idx) => (
+                      <div key={idx} style={{ color: "var(--text-secondary)", marginBottom: "0.25rem" }}>
+                        • {r.message || "Test requirement failed. Check your logic."}
+                      </div>
+                    ))}
+                </div>
+              )}
+
               <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem", lineHeight: 1.6 }}>
-                You are close. Fix the remaining requirement and try again.
+                Your code has been saved. Review the hints or terminal messages and try again when ready.
               </p>
+
               <div className="modal-actions">
                 <Button variant="primary" onClick={() => setShowFailed(false)}>
                   Keep Working
                 </Button>
+                {allPassed && (
+                  <Button variant="secondary" onClick={handleSubmit} disabled={submitting}>
+                    {submitting ? "Retrying..." : "Retry Submission"}
+                  </Button>
+                )}
               </div>
             </motion.div>
           </motion.div>

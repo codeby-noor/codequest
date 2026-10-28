@@ -62,6 +62,20 @@ const authRateLimiter = createRateLimiter({
   message: "Too many authentication attempts. Please wait a few minutes before trying again.",
 });
 
+// Pre-configured rate limiter for feedback submissions (anti-spam)
+const feedbackRateLimiter = createRateLimiter({
+  windowMs: 10 * 60 * 1000,
+  maxRequests: 5,
+  message: "Too many feedback submissions. Please wait a few minutes before trying again.",
+});
+
+// Pre-configured rate limiter for general resource creation (user/progress updates)
+const generalWriteRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 100,
+  message: "Too many write requests. Please slow down and try again shortly.",
+});
+
 // Helper for testing
 function resetRateLimits() {
   ipRequestMap.clear();
@@ -70,5 +84,7 @@ function resetRateLimits() {
 module.exports = {
   createRateLimiter,
   authRateLimiter,
+  feedbackRateLimiter,
+  generalWriteRateLimiter,
   resetRateLimits,
 };

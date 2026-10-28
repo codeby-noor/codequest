@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../Button/Button";
+import { trackEvent, ANALYTICS_EVENTS } from "../../services/analytics";
 import "./AuthModal.css";
 
 /**
@@ -100,6 +101,7 @@ export default function AuthModal() {
         if (!res.success) {
           setError(humanizeError(res.message));
         } else {
+          trackEvent(ANALYTICS_EVENTS.AUTH_LOGIN_COMPLETED);
           setSuccessMessage("Signed in successfully — your quest ledger is ready!");
         }
       } else {
@@ -111,6 +113,7 @@ export default function AuthModal() {
         if (!res.success) {
           setError(humanizeError(res.message));
         } else {
+          trackEvent(ANALYTICS_EVENTS.AUTH_REGISTER_COMPLETED);
           setSuccessMessage("Account created — your CodeQuest progress is now linked.");
         }
       }

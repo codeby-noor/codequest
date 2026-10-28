@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageHeader from "../../components/PageHeader/PageHeader";
@@ -9,10 +9,15 @@ import Badge from "../../components/Badge/Badge";
 import { getLessonsForWorld, getWorldProgress, getCurrentLessonForWorld } from "../../data/lessonsIndex";
 import { getWorldById, getNextWorld, getWorldPrerequisite } from "../../data/worlds";
 import { useProgress } from "../../context/ProgressContext";
+import { trackEvent, ANALYTICS_EVENTS } from "../../services/analytics";
 
 export default function Learn() {
   const { worldId = "village" } = useParams();
   const { progress, isLessonCompleted, isWorldUnlocked } = useProgress();
+
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.LEARNING_PATH_OPENED, { worldId });
+  }, [worldId]);
 
   const world = getWorldById(worldId) || {
     id: worldId,

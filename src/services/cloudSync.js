@@ -58,6 +58,10 @@ export function mergeLocalAndCloudProgress(local = {}, cloud = {}) {
     new Set([...(local.completedLessons || []), ...(cloud.completedLessons || [])])
   );
 
+  const completedChallenges = Array.from(
+    new Set([...(local.completedChallenges || []), ...(cloud.completedChallenges || [])])
+  );
+
   const unlockedLessons = Array.from(
     new Set(["lesson-01", ...(local.unlockedLessons || []), ...(cloud.unlockedLessons || [])])
   );
@@ -80,12 +84,20 @@ export function mergeLocalAndCloudProgress(local = {}, cloud = {}) {
   // 3. XP & Streak: Highest verified progress
   const xp = Math.max(Number(local.xp) || 0, Number(cloud.xp) || 0);
   const streak = Math.max(Number(local.streak) || 0, Number(cloud.streak) || 0);
+  const longestStreak = Math.max(
+    Number(local.longestStreak) || streak,
+    Number(cloud.longestStreak) || 0
+  );
+  const lastActiveDay = local.lastActiveDay || cloud.lastActiveDay || null;
 
   return {
     ...local,
     xp,
     streak,
+    longestStreak,
+    lastActiveDay,
     completedLessons,
+    completedChallenges,
     unlockedLessons,
     completedWorlds,
     achievements,
@@ -102,8 +114,11 @@ export function formatCloudPayload(progress = {}) {
     xp: Math.max(0, progress.xp || 0),
     level: Math.max(1, levelInfo.level || 1),
     streak: Math.max(0, progress.streak || 0),
+    longestStreak: Math.max(0, progress.longestStreak || progress.streak || 0),
+    lastActiveDay: progress.lastActiveDay || null,
     avatar: progress.avatar || "⚔️",
     completedLessons: Array.isArray(progress.completedLessons) ? progress.completedLessons : [],
+    completedChallenges: Array.isArray(progress.completedChallenges) ? progress.completedChallenges : [],
     unlockedLessons: Array.isArray(progress.unlockedLessons) ? progress.unlockedLessons : ["lesson-01"],
     completedWorlds: Array.isArray(progress.completedWorlds) ? progress.completedWorlds : [],
     skills: progress.skillProgress || progress.skills || {},

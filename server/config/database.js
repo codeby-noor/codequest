@@ -48,12 +48,14 @@ async function connectDB(customUri = null, options = {}) {
     console.log(`[MongoDB] Successfully connected to database: ${DB_NAME}`);
     return { db, client, connected: true };
   } catch (err) {
-   console.error("[MongoDB] Connection failed", {
-  name: err.name,
-  code: err.code,
-  codeName: err.codeName,
-  message: err.message,
-});
+    // Redact any credentials embedded in error message
+    const safeMessage = (err.message || "").replace(/(mongodb(?:\+srv)?:\/\/[^:]+:)([^@]+)(@)/gi, "$1***$3");
+    console.error("[MongoDB] Connection failed", {
+      name: err.name,
+      code: err.code,
+      codeName: err.codeName,
+      message: safeMessage,
+    });
     client = null;
     db = null;
     return {

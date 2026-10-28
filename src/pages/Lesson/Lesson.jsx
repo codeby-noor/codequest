@@ -6,6 +6,7 @@ import Button from "../../components/Button/Button";
 import Badge from "../../components/Badge/Badge";
 import { getLessonById, getNextLessonId, isWorldComplete } from "../../data/lessonsIndex";
 import { useProgress } from "../../context/ProgressContext";
+import { trackEvent, ANALYTICS_EVENTS } from "../../services/analytics";
 
 const WORLD_META = {
   village: { name: "JavaScript Village", path: "/learn/village" },
@@ -75,6 +76,11 @@ export default function Lesson() {
   function handleSolved() {
     if (!alreadyCompleted) {
       completeLessonAndReward(lesson);
+      trackEvent(ANALYTICS_EVENTS.SESSION_COMPLETED, {
+        lessonId: lesson.id,
+        world: lesson.world,
+        xp: lesson.xp,
+      });
     }
     setShowComplete(true);
   }

@@ -10,7 +10,10 @@ const DEFAULT_USER_DATA = {
   xp: 0,
   level: 1,
   streak: 0,
+  longestStreak: 0,
+  lastActiveDay: null,
   completedLessons: [],
+  completedChallenges: [],
   unlockedLessons: ["lesson-01"],
   completedWorlds: [],
   skills: {
@@ -85,9 +88,27 @@ function validateUserData(data = {}, isUpdate = false) {
     }
   }
 
+  if (data.longestStreak !== undefined) {
+    if (typeof data.longestStreak !== "number" || !Number.isInteger(data.longestStreak) || data.longestStreak < 0) {
+      errors.push("longestStreak must be a non-negative integer.");
+    }
+  }
+
+  if (data.lastActiveDay !== undefined && data.lastActiveDay !== null) {
+    if (typeof data.lastActiveDay !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.lastActiveDay)) {
+      errors.push("lastActiveDay must be a YYYY-MM-DD formatted date string or null.");
+    }
+  }
+
   if (data.completedLessons !== undefined) {
     if (!Array.isArray(data.completedLessons) || !data.completedLessons.every((l) => typeof l === "string")) {
       errors.push("completedLessons must be an array of strings.");
+    }
+  }
+
+  if (data.completedChallenges !== undefined) {
+    if (!Array.isArray(data.completedChallenges) || !data.completedChallenges.every((c) => typeof c === "string")) {
+      errors.push("completedChallenges must be an array of strings.");
     }
   }
 
@@ -140,7 +161,10 @@ function buildUserDocument(input = {}) {
     xp: typeof input.xp === "number" ? Math.max(0, input.xp) : DEFAULT_USER_DATA.xp,
     level: typeof input.level === "number" ? Math.max(1, input.level) : DEFAULT_USER_DATA.level,
     streak: typeof input.streak === "number" ? Math.max(0, input.streak) : DEFAULT_USER_DATA.streak,
+    longestStreak: typeof input.longestStreak === "number" ? Math.max(0, input.longestStreak) : (typeof input.streak === "number" ? Math.max(0, input.streak) : DEFAULT_USER_DATA.longestStreak),
+    lastActiveDay: input.lastActiveDay || DEFAULT_USER_DATA.lastActiveDay,
     completedLessons: Array.isArray(input.completedLessons) ? input.completedLessons : [...DEFAULT_USER_DATA.completedLessons],
+    completedChallenges: Array.isArray(input.completedChallenges) ? input.completedChallenges : [...DEFAULT_USER_DATA.completedChallenges],
     unlockedLessons: Array.isArray(input.unlockedLessons) ? input.unlockedLessons : [...DEFAULT_USER_DATA.unlockedLessons],
     completedWorlds: Array.isArray(input.completedWorlds) ? input.completedWorlds : [...DEFAULT_USER_DATA.completedWorlds],
     skills: input.skills && typeof input.skills === "object" ? { ...input.skills } : { ...DEFAULT_USER_DATA.skills },
@@ -179,7 +203,10 @@ function sanitizeUser(user) {
     xp: typeof user.xp === "number" ? user.xp : 0,
     level: typeof user.level === "number" ? user.level : 1,
     streak: typeof user.streak === "number" ? user.streak : 0,
+    longestStreak: typeof user.longestStreak === "number" ? user.longestStreak : (typeof user.streak === "number" ? user.streak : 0),
+    lastActiveDay: user.lastActiveDay || null,
     completedLessons: Array.isArray(user.completedLessons) ? user.completedLessons : [],
+    completedChallenges: Array.isArray(user.completedChallenges) ? user.completedChallenges : [],
     unlockedLessons: Array.isArray(user.unlockedLessons) ? user.unlockedLessons : ["lesson-01"],
     completedWorlds: Array.isArray(user.completedWorlds) ? user.completedWorlds : [],
     skills: user.skills && typeof user.skills === "object" ? user.skills : {},

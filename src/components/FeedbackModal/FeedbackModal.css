@@ -1,0 +1,118 @@
+.feedback-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 23, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1050;
+  animation: feedbackFadeIn 0.2s ease-out;
+}
+
+.feedback-modal-content {
+  background: var(--cq-bg-card, #121826);
+  border: 1px solid var(--cq-border, #1f293d);
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 520px;
+  padding: 1.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+.feedback-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--cq-border, #1f293d);
+}
+
+.feedback-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--cq-text-muted, #94a3b8);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.feedback-close-btn:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.feedback-type-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.feedback-type-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--cq-border, #1f293d);
+  color: var(--cq-text-secondary, #94a3b8);
+  padding: 0.5rem 0.25rem;
+  font-size: 0.825rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.feedback-type-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #fff;
+}
+
+.feedback-type-btn.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--cq-primary, #6366f1);
+  color: #fff;
+}
+
+.feedback-star-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #f59e0b;
+  cursor: pointer;
+  padding: 0.1rem 0.25rem;
+  transition: transform 0.1s ease;
+}
+
+.feedback-star-btn:hover {
+  transform: scale(1.2);
+}
+
+.feedback-textarea,
+.feedback-input {
+  background: rgba(10, 14, 23, 0.6) !important;
+  border: 1px solid var(--cq-border, #1f293d) !important;
+  color: var(--cq-text, #f1f5f9) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.9rem !important;
+}
+
+.feedback-textarea:focus,
+.feedback-input:focus {
+  border-color: var(--cq-primary, #6366f1) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
+}
+
+@keyframes feedbackFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

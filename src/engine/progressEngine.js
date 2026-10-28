@@ -36,6 +36,7 @@ export const DEFAULT_PROGRESS = {
     programming: 0,
   },
   streak: 0,
+  longestStreak: 0,
   lastActiveDay: null,
 };
 
@@ -64,6 +65,12 @@ function normalizeProgress(progress) {
     projectSteps: progress.projectSteps && typeof progress.projectSteps === "object" ? progress.projectSteps : {},
     achievementMeta: progress.achievementMeta && typeof progress.achievementMeta === "object" ? progress.achievementMeta : {},
     completedProjectMeta: progress.completedProjectMeta && typeof progress.completedProjectMeta === "object" ? progress.completedProjectMeta : {},
+    streak: Number.isInteger(progress?.streak) && progress.streak >= 0 ? progress.streak : DEFAULT_PROGRESS.streak,
+    longestStreak: Math.max(
+      Number.isInteger(progress?.longestStreak) && progress.longestStreak >= 0 ? progress.longestStreak : 0,
+      Number.isInteger(progress?.streak) && progress.streak >= 0 ? progress.streak : 0
+    ),
+    lastActiveDay: progress?.lastActiveDay || DEFAULT_PROGRESS.lastActiveDay,
     skillProgress: { ...DEFAULT_PROGRESS.skillProgress, ...(progress.skillProgress || {}) },
   };
 }
@@ -141,17 +148,36 @@ export function addSkillProgress(progress, skillId, percent) {
   };
 }
 
-/** Update the streak based on today's activity. */
-export function updateStreak(progress) {
-  const today = new Date().toISOString().slice(0, 10);
-  if (progress.lastActiveDay === today) return progress;
+/** Update the streak based on today's activity using UTC date boundaries. */
+export function updateStreak(progress, testDate = null) {
+  const d = testDate ? new Date(testDate) : new Date();
+  const today = d.toISOString().slice(0, 10);
 
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  const streak = progress.lastActiveDay === yesterday ? progress.streak + 1 : 1;
+  if (progress.lastActiveDay === today) {
+    const current = Math.max(1, progress.streak || 1);
+    return {
+      ...progress,
+      streak: current,
+      longestStreak: Math.max(progress.longestStreak || 0, current),
+    };
+  }
+
+  let streak = 1;
+  if (progress.lastActiveDay) {
+    const [y1, m1, d1] = progress.lastActiveDay.split("-").map(Number);
+    const [y2, m2, d2] = today.split("-").map(Number);
+    const diffDays = Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000);
+    if (diffDays === 1) {
+      streak = (progress.streak || 0) + 1;
+    }
+  }
+
+  const longestStreak = Math.max(progress.longestStreak || 0, streak);
 
   return {
     ...progress,
     streak,
+    longestStreak,
     lastActiveDay: today,
   };
 }

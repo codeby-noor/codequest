@@ -11,8 +11,11 @@ const ALLOWED_PROGRESS_FIELDS = [
   "xp",
   "level",
   "streak",
+  "longestStreak",
+  "lastActiveDay",
   "avatar",
   "completedLessons",
+  "completedChallenges",
   "unlockedLessons",
   "completedWorlds",
   "skills",
@@ -164,8 +167,72 @@ async function handleUpdateProgress(req, res, next) {
   }
 }
 
+/**
+ * POST /api/users/:id/challenges/:challengeId/complete
+ * Atomically records verified challenge completion on the server.
+ * Awards XP safely, advances streak, unlocks eligible achievements, and updates level.
+ */
+async function handleCompleteChallenge(req, res, next) {
+  try {
+    const { id, challengeId } = req.params;
+    const body = req.body || {};
+
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    if (!challengeId || typeof challengeId !== "string" || !challengeId.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Challenge ID is required",
+      });
+    }
+
+    const challengeData = {
+      id: challengeId.trim(),
+      lessonId: body.lessonId,
+      difficulty: body.difficulty,
+      xp: body.xp,
+      skillId: body.skillId,
+      skillProgress: body.skillProgress,
+    };
+
+    const result = await userRepository.recordChallengeCompletion(id, challengeData);
+
+    return res.status(200).json({
+      success: true,
+      alreadyCompleted: result.alreadyCompleted,
+      awardedXp: result.awardedXp,
+      challengeXp: result.challengeXp,
+      achievementXpBonus: result.achievementXpBonus,
+      level: result.level,
+      streakInfo: result.streakInfo,
+      newlyUnlockedAchievements: result.newlyUnlockedAchievements,
+      user: sanitizeUser(result.user),
+    });
+  } catch (err) {
+    if (err.status === 404) {
+      return res.status(404).json({
+        success: false,
+        message: err.message || "User not found",
+      });
+    }
+    if (err.status === 400) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Invalid challenge completion payload",
+      });
+    }
+    next(err);
+  }
+}
+
 module.exports = {
   handleCreateUser,
   handleGetUserById,
   handleUpdateProgress,
+  handleCompleteChallenge,
 };

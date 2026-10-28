@@ -21,11 +21,14 @@ export default function ProgressCard() {
   const currentLesson = getCurrentLessonForWorld(currentWorldId, progress);
   const currentWorldName = WORLD_NAMES[currentWorldId] || "The Village";
 
+  const achievementsCount = Array.isArray(progress.achievements) ? progress.achievements.length : 0;
+  const challengesCount = Array.isArray(progress.completedChallenges) ? progress.completedChallenges.length : 0;
+
   const stats = [
-    { icon: "🔥", value: progress.streak, label: "Day streak" },
-    { icon: "⚡", value: progress.xp, label: "XP" },
-    { icon: "🏆", value: progress.achievements || 2, label: "Achievements" },
-    { icon: "✅", value: progress.completedChallenges.length, label: "Challenges" },
+    { icon: "🔥", value: `${progress.streak || 0}d`, label: `Streak (Best: ${progress.longestStreak || progress.streak || 0}d)` },
+    { icon: "⚡", value: (progress.xp || 0).toLocaleString(), label: "Verified XP" },
+    { icon: "🏆", value: achievementsCount, label: "Achievements" },
+    { icon: "✅", value: challengesCount, label: "Challenges Solved" },
   ];
 
   return (

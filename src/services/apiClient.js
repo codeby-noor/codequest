@@ -226,6 +226,71 @@ export async function updatePlayerProgress(playerId, progress = {}) {
   }
 }
 
+/**
+ * Submit verified challenge completion to the backend server.
+ * Atomically awards XP, advances streaks, evaluates achievements, and updates level.
+ *
+ * @param {string} playerId
+ * @param {string} challengeId
+ * @param {object} metadata - { lessonId, difficulty, xp, skillId, skillProgress }
+ * @returns {Promise<object>} Server decision and award summary
+ */
+export async function completeChallenge(playerId, challengeId, metadata = {}) {
+  if (!playerId) {
+    return { success: false, message: "Player ID is required", offline: true };
+  }
+  if (!challengeId) {
+    return { success: false, message: "Challenge ID is required" };
+  }
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/users/${encodeURIComponent(playerId)}/challenges/${encodeURIComponent(challengeId)}/complete`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(metadata),
+      }
+    );
+
+    return await handleResponse(res);
+  } catch (err) {
+    return {
+      success: false,
+      message: "Network error submitting challenge completion. Progress saved locally.",
+      offline: true,
+    };
+  }
+}
+
+/**
+ * Fetch real-time public leaderboard standings.
+ *
+ * @param {object} [params] - { limit, page, userId }
+ * @returns {Promise<object>}
+ */
+export async function getLeaderboard(params = {}) {
+  try {
+    const query = new URLSearchParams();
+    if (params.limit) query.set("limit", String(params.limit));
+    if (params.page) query.set("page", String(params.page));
+    if (params.userId) query.set("userId", String(params.userId));
+
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    const res = await fetch(`${API_BASE}/leaderboard${qs}`, {
+      headers: getHeaders(),
+    });
+
+    return await handleResponse(res);
+  } catch (err) {
+    return {
+      success: false,
+      message: "Could not fetch online leaderboard standings",
+      offline: true,
+    };
+  }
+}
+
 // =========================================================================
 // Authentication Client Methods
 // =========================================================================
@@ -341,16 +406,40 @@ export async function linkAnonymousProgress(anonymousPlayerId) {
   }
 }
 
+/**
+ * Submit feedback or bug report to the server.
+ */
+export async function submitFeedback(feedbackData) {
+  try {
+    const res = await fetch(`${API_BASE}/feedback`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(feedbackData),
+    });
+
+    return await handleResponse(res);
+  } catch (err) {
+    return {
+      success: false,
+      message: "Feedback submission failed. Please try again later.",
+      offline: true,
+    };
+  }
+}
+
 export const apiClient = {
   checkApiHealth,
   createPlayer,
   getPlayer,
   updatePlayerProgress,
+  completeChallenge,
+  getLeaderboard,
   registerUser,
   loginUser,
   getMe,
   logoutUser,
   linkAnonymousProgress,
+  submitFeedback,
   getAuthToken,
   setAuthToken,
   clearAuthToken,
