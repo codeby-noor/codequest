@@ -101,8 +101,8 @@ export default function Challenges() {
       <section
         className="card card-elevated"
         style={{
-          marginBottom: "2.5rem",
-          padding: "1.75rem",
+          marginBottom: "2rem",
+          padding: "clamp(1rem, 3.5vw, 1.75rem)",
           background: "var(--cq-surface-card)",
           borderRadius: "var(--cq-radius-xl)",
           border: "1px solid var(--cq-border)",
@@ -112,8 +112,8 @@ export default function Challenges() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-            gap: "1.5rem",
+            gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+            gap: "1.25rem",
             alignItems: "center",
             marginBottom: "1.25rem",
           }}
@@ -122,8 +122,8 @@ export default function Challenges() {
             <span style={{ fontSize: "0.8rem", color: "var(--cq-text-muted)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Catalog Completion
             </span>
-            <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--cq-text)", marginTop: "0.25rem" }}>
-              {stats.completed} <span style={{ fontSize: "1.1rem", color: "var(--cq-text-muted)", fontWeight: 400 }}>/ {stats.total} Solved</span>
+            <div style={{ fontSize: "clamp(1.35rem, 4vw, 1.75rem)", fontWeight: 700, color: "var(--cq-text)", marginTop: "0.25rem" }}>
+              {stats.completed} <span style={{ fontSize: "0.95rem", color: "var(--cq-text-muted)", fontWeight: 400 }}>/ {stats.total} Solved</span>
             </div>
           </div>
 
@@ -131,8 +131,8 @@ export default function Challenges() {
             <span style={{ fontSize: "0.8rem", color: "var(--cq-text-muted)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Verified XP Earned
             </span>
-            <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--cq-accent)", marginTop: "0.25rem" }}>
-              {stats.earnedXp.toLocaleString()} <span style={{ fontSize: "1.1rem", color: "var(--cq-text-muted)", fontWeight: 400 }}>/ {stats.totalXp.toLocaleString()} XP</span>
+            <div style={{ fontSize: "clamp(1.35rem, 4vw, 1.75rem)", fontWeight: 700, color: "var(--cq-accent)", marginTop: "0.25rem" }}>
+              {stats.earnedXp.toLocaleString()} <span style={{ fontSize: "0.95rem", color: "var(--cq-text-muted)", fontWeight: 400 }}>/ {stats.totalXp.toLocaleString()} XP</span>
             </div>
           </div>
 
@@ -140,7 +140,7 @@ export default function Challenges() {
             <span style={{ fontSize: "0.8rem", color: "var(--cq-text-muted)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Path Completion
             </span>
-            <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--cq-primary-light)", marginTop: "0.25rem" }}>
+            <div style={{ fontSize: "clamp(1.35rem, 4vw, 1.75rem)", fontWeight: 700, color: "var(--cq-primary-light)", marginTop: "0.25rem" }}>
               {stats.percent}%
             </div>
           </div>
@@ -154,8 +154,8 @@ export default function Challenges() {
         <section
           className="card card-elevated"
           style={{
-            marginBottom: "2.5rem",
-            padding: "1.75rem",
+            marginBottom: "2rem",
+            padding: "clamp(1rem, 3.5vw, 1.75rem)",
             background: "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.05))",
             border: "1px solid rgba(99, 102, 241, 0.3)",
             borderRadius: "var(--cq-radius-xl)",
@@ -165,15 +165,15 @@ export default function Challenges() {
           aria-label="Recommended next challenge"
         >
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                <Badge tone="accent">⚡ RECOMMENDED NEXT CHALLENGE</Badge>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                <Badge tone="accent">⚡ RECOMMENDED</Badge>
                 <Badge tone={recommendedChallenge.difficultyTone}>{recommendedChallenge.difficulty}</Badge>
                 <span style={{ fontSize: "0.85rem", color: "var(--cq-text-muted)", fontFamily: "var(--font-mono)" }}>
                   +{recommendedChallenge.xp} XP
                 </span>
               </div>
-              <h2 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0.5rem 0" }}>{recommendedChallenge.title}</h2>
+              <h2 style={{ fontSize: "clamp(1.2rem, 3vw, 1.5rem)", margin: "0.25rem 0 0.5rem 0", wordBreak: "break-word" }}>{recommendedChallenge.title}</h2>
               <p style={{ color: "var(--cq-text-secondary)", maxWidth: "700px", lineHeight: 1.6, margin: 0 }}>
                 {recommendedChallenge.objective}
               </p>
@@ -203,22 +203,14 @@ export default function Challenges() {
         aria-label="Filter and search challenges"
       >
         {/* Search Bar & Status Quick Filters */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ flex: "1 1 300px", maxWidth: "450px", position: "relative" }}>
+        <div className="challenges-search-filter-row">
+          <div className="challenges-search-wrap">
             <input
               type="text"
               placeholder="Search challenges by keyword, topic, or objective..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="form-control"
-              style={{
-                background: "var(--cq-surface-card)",
-                border: "1px solid var(--cq-border)",
-                color: "var(--cq-text)",
-                padding: "0.6rem 1rem",
-                borderRadius: "var(--cq-radius-lg)",
-                fontSize: "0.95rem",
-              }}
               aria-label="Search challenges"
             />
             {searchQuery && (
@@ -227,14 +219,21 @@ export default function Challenges() {
                 onClick={() => setSearchQuery("")}
                 style={{
                   position: "absolute",
-                  right: "12px",
+                  right: "6px",
                   top: "50%",
                   transform: "translateY(-50%)",
                   background: "transparent",
                   border: "none",
                   color: "var(--cq-text-muted)",
                   cursor: "pointer",
-                  fontSize: "1rem",
+                  fontSize: "1.1rem",
+                  width: "40px",
+                  height: "40px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "50%",
+                  touchAction: "manipulation",
                 }}
                 aria-label="Clear search"
               >
@@ -253,7 +252,11 @@ export default function Challenges() {
                 type="button"
                 onClick={() => setSelectedStatus(st)}
                 style={{
-                  padding: "0.35rem 0.85rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "38px",
+                  padding: "0.4rem 0.9rem",
                   fontSize: "0.85rem",
                   borderRadius: "20px",
                   border: "1px solid",
@@ -263,6 +266,7 @@ export default function Challenges() {
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                   textTransform: "capitalize",
+                  touchAction: "manipulation",
                 }}
                 aria-pressed={selectedStatus === st}
               >
@@ -303,6 +307,7 @@ export default function Challenges() {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "0.4rem",
+                    minHeight: "42px",
                     padding: "0.45rem 0.9rem",
                     fontSize: "0.875rem",
                     borderRadius: "8px",
@@ -313,6 +318,7 @@ export default function Challenges() {
                     fontWeight: active ? 600 : 400,
                     cursor: "pointer",
                     transition: "all 0.15s ease",
+                    touchAction: "manipulation",
                   }}
                   aria-pressed={active}
                 >
@@ -357,6 +363,10 @@ export default function Challenges() {
                   type="button"
                   onClick={() => setSelectedDifficulty(diff.id)}
                   style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "38px",
                     padding: "0.4rem 1rem",
                     fontSize: "0.875rem",
                     borderRadius: "6px",
@@ -367,6 +377,7 @@ export default function Challenges() {
                     cursor: "pointer",
                     fontWeight: active ? 600 : 400,
                     transition: "all 0.15s ease",
+                    touchAction: "manipulation",
                   }}
                   aria-pressed={active}
                 >

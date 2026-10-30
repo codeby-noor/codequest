@@ -67,11 +67,11 @@ export default function OnboardingModal() {
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: "580px", textAlign: "center", padding: "2rem" }}
+            style={{ maxWidth: "580px", textAlign: "center", padding: "clamp(1.25rem, 4vw, 2rem)", width: "100%" }}
           >
-            <div style={{ fontSize: "3rem", marginBottom: "0.5rem" }} aria-hidden="true">⚔️</div>
+            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }} aria-hidden="true">⚔️</div>
             <Badge tone="accent" style={{ marginBottom: "0.75rem" }}>WELCOME ADVENTURER</Badge>
-            <h2 id="onboarding-title" style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>
+            <h2 id="onboarding-title" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)", marginBottom: "0.5rem" }}>
               Welcome to CodeQuest
             </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>

@@ -20,13 +20,13 @@ export default function ArenaToolbar({
     <div className="arena-toolbar">
       <div className="arena-toolbar-left">
         <Button variant="primary" onClick={onRun} disabled={running}>
-          {running ? "Running..." : "▶ Run Code"}
+          {running ? "Running..." : "▶ Run"}
         </Button>
         <Button variant="secondary" onClick={onReset}>
           Reset
         </Button>
         <Button variant="ghost" onClick={onMentor}>
-          {mentorOpen ? "Close Mentor" : "🤖 Ask Mentor"}
+          {mentorOpen ? "Close" : "🤖 Mentor"}
         </Button>
       </div>
       <div className="arena-toolbar-right">
@@ -36,7 +36,7 @@ export default function ArenaToolbar({
           onClick={onSubmit}
           disabled={!allPassed || running}
         >
-          {alreadyCompleted ? "Already Completed" : "Submit Mission →"}
+          {alreadyCompleted ? "Completed" : "Submit Mission →"}
         </Button>
       </div>
     </div>

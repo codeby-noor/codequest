@@ -99,7 +99,7 @@ export default function Home() {
                 flexDirection: "column",
                 justifyContent: "center",
                 gap: "1.25rem",
-                padding: "2rem",
+                padding: "clamp(1.1rem, 3.5vw, 1.85rem)",
                 background: "var(--cq-surface-card)",
                 borderRadius: "var(--cq-radius-xl)",
                 border: "1px solid var(--cq-border)",
@@ -186,27 +186,28 @@ export default function Home() {
                   key={ach.id}
                   className="card card-elevated"
                   style={{
-                    padding: "1.25rem",
+                    padding: "clamp(0.85rem, 2.5vw, 1.25rem)",
                     display: "flex",
                     alignItems: "center",
-                    gap: "1rem",
+                    gap: "0.85rem",
                     opacity: unlocked ? 1 : 0.6,
                     border: unlocked ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid var(--cq-border)",
                     background: unlocked
                       ? "linear-gradient(135deg, rgba(16, 185, 129, 0.05), var(--cq-surface-card))"
                       : "var(--cq-surface-card)",
                     borderRadius: "var(--cq-radius-lg)",
+                    minWidth: 0,
                   }}
                 >
-                  <span style={{ fontSize: "2rem" }} aria-hidden="true">
+                  <span style={{ fontSize: "1.75rem", flexShrink: 0 }} aria-hidden="true">
                     {ach.icon}
                   </span>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <strong style={{ fontSize: "0.95rem", color: "var(--cq-text)" }}>{ach.title}</strong>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                      <strong style={{ fontSize: "0.92rem", color: "var(--cq-text)", wordBreak: "break-word" }}>{ach.title}</strong>
                       {unlocked ? <Badge tone="success">Unlocked</Badge> : <Badge tone="muted">Locked</Badge>}
                     </div>
-                    <span style={{ fontSize: "0.8rem", color: "var(--cq-text-muted)", display: "block", marginTop: "2px" }}>
+                    <span style={{ fontSize: "0.78rem", color: "var(--cq-text-muted)", display: "block", marginTop: "2px" }}>
                       +{ach.xp} XP · {ach.rarity}
                     </span>
                   </div>
@@ -257,31 +258,34 @@ export default function Home() {
                     border: i === 0 ? "1px solid rgba(234, 179, 8, 0.25)" : "1px solid transparent",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minWidth: 0, flex: 1 }}>
                     <span
                       style={{
                         fontFamily: "var(--font-mono)",
                         fontWeight: 700,
-                        fontSize: "1rem",
+                        fontSize: "0.95rem",
                         color: i === 0 ? "#eab308" : "var(--cq-text-muted)",
-                        minWidth: "24px",
+                        minWidth: "22px",
+                        flexShrink: 0,
                       }}
                     >
                       #{i + 1}
                     </span>
-                    <span style={{ fontSize: "1.25rem" }} aria-hidden="true">{u.avatar || "⚔️"}</span>
-                    <div>
-                      <strong style={{ color: "var(--cq-text)", fontSize: "0.95rem" }}>{u.username || u.name}</strong>
-                      <span style={{ fontSize: "0.8rem", color: "var(--cq-text-muted)", display: "block" }}>
+                    <span style={{ fontSize: "1.25rem", flexShrink: 0 }} aria-hidden="true">{u.avatar || "⚔️"}</span>
+                    <div style={{ minWidth: 0, overflow: "hidden" }}>
+                      <strong style={{ color: "var(--cq-text)", fontSize: "0.92rem", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {u.username || u.name}
+                      </strong>
+                      <span style={{ fontSize: "0.78rem", color: "var(--cq-text-muted)", display: "block" }}>
                         Level {String(u.level || 1).padStart(2, "0")}
                       </span>
                     </div>
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <strong style={{ color: "var(--cq-accent)", fontSize: "1rem", fontFamily: "var(--font-mono)" }}>
+                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "0.5rem" }}>
+                    <strong style={{ color: "var(--cq-accent)", fontSize: "0.95rem", fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
                       {(u.xp || 0).toLocaleString()} XP
                     </strong>
-                    <span style={{ display: "block", fontSize: "0.8rem", color: "var(--cq-text-muted)" }}>
+                    <span style={{ display: "block", fontSize: "0.78rem", color: "var(--cq-text-muted)" }}>
                       🔥 {u.streak || 0}d
                     </span>
                   </div>

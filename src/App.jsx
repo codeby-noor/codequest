@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./components/Navbar/Navbar";
+import MobileBottomNav from "./components/MobileBottomNav/MobileBottomNav";
 import Footer from "./components/Footer/Footer";
 import LevelUpModal from "./components/LevelUpModal/LevelUpModal";
 import XpToast from "./components/XpToast/XpToast";
@@ -93,6 +94,7 @@ export default function App() {
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Navbar />
             <AnimatedRoutes />
+            <MobileBottomNav />
             <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
             <LevelUpModal />
             <XpToast />

@@ -61,25 +61,11 @@ export default function SkillNode({ skill, index }) {
             className="skill-tooltip"
             role="tooltip"
             initial={{ opacity: 0, y: 6, scale: 0.96 }}
-            animate={{ opacity: 1, y: 6, scale: 1 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            style={{
-              position: "absolute",
-              left: "calc(100% + 1rem)",
-              top: "50%",
-              marginTop: -32,
-              width: 260,
-              background: "var(--surface-elevated)",
-              border: "1px solid var(--border-strong)",
-              borderRadius: "var(--radius-md)",
-              padding: "1rem",
-              boxShadow: "var(--shadow-lg)",
-              zIndex: 10,
-              pointerEvents: "none",
-            }}
           >
-            <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, marginBottom: "0.35rem" }}>
+            <div className="skill-tooltip-name">
               {name}
             </div>
             <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: "0.75rem" }}>

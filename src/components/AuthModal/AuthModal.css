@@ -5,11 +5,12 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: var(--z-modal, 200);
-  padding: 1rem;
+  padding: clamp(1rem, 4vh, 2.5rem) clamp(0.75rem, 3vw, 1.25rem);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .auth-modal-card {
@@ -19,9 +20,11 @@
   background: var(--cq-surface-elevated, #131b2e);
   border: 1px solid var(--cq-border-strong, rgba(255, 255, 255, 0.16));
   border-radius: var(--cq-radius-xl, 20px);
-  padding: 2rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
   box-shadow: var(--cq-shadow-xl, 0 20px 50px rgba(0, 0, 0, 0.7)), 0 0 30px rgba(99, 102, 241, 0.15);
-  margin: auto;
+  margin: auto 0;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
 }
 
 .auth-modal-close {
@@ -182,7 +185,7 @@
   border-radius: 8px;
   padding: 0.75rem 1rem;
   color: #ffffff;
-  font-size: 0.95rem;
+  font-size: 1rem; /* 16px to prevent iOS auto-zoom on focus */
   outline: none;
   min-height: 44px;
   box-sizing: border-box;

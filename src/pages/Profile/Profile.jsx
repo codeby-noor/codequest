@@ -62,17 +62,17 @@ export default function Profile() {
           flexWrap: "wrap",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: "1.5rem",
-          padding: "1.5rem 2rem",
+          gap: "1.25rem",
+          padding: "clamp(1rem, 3vw, 1.5rem)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flex: "1 1 320px" }}>
-          <div style={{ fontSize: "2.25rem" }} aria-hidden="true">
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flex: "1 1 240px", minWidth: 0 }}>
+          <div style={{ fontSize: "2.25rem", flexShrink: 0 }} aria-hidden="true">
             {isAuthenticated ? "🛡️" : "⚔️"}
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-              <h3 style={{ fontSize: "1.2rem", margin: 0 }}>
+              <h3 style={{ fontSize: "1.2rem", margin: 0, wordBreak: "break-word" }}>
                 {isAuthenticated ? "Authenticated Adventurer" : "Anonymous Explorer"}
               </h3>
               <Badge tone={isAuthenticated ? "success" : "accent"}>
@@ -80,7 +80,7 @@ export default function Profile() {
               </Badge>
               <SyncStatusBadge />
             </div>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", margin: "0.35rem 0 0", lineHeight: 1.5 }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", margin: "0.35rem 0 0", lineHeight: 1.5, wordBreak: "break-word" }}>
               {isAuthenticated
                 ? `Signed in as ${user.email || user.username}. Your progress is safely backed up to your cloud account.`
                 : "Your progress is currently saved on this device. Create an account to keep your progress synced across devices."}
@@ -88,7 +88,7 @@ export default function Profile() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
           {isAuthenticated ? (
             <>
               {showLogoutConfirm ? (

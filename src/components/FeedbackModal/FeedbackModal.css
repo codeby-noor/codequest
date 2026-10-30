@@ -5,10 +5,12 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 1rem;
-  z-index: 1050;
+  padding: clamp(1rem, 4vh, 2.5rem) clamp(0.75rem, 3vw, 1.25rem);
+  z-index: var(--z-modal, 200);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: feedbackFadeIn 0.2s ease-out;
 }
 
@@ -18,8 +20,11 @@
   border-radius: 1rem;
   width: 100%;
   max-width: 520px;
-  padding: 1.75rem;
+  padding: clamp(1.25rem, 4vw, 1.75rem);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  margin: auto 0;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
 }
 
 .feedback-modal-header {
@@ -49,7 +54,7 @@
 
 .feedback-type-selector {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 0.5rem;
 }
 
@@ -64,6 +69,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .feedback-type-btn:hover {
@@ -80,11 +89,17 @@
 .feedback-star-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: #f59e0b;
   cursor: pointer;
-  padding: 0.1rem 0.25rem;
-  transition: transform 0.1s ease;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+  touch-action: manipulation;
 }
 
 .feedback-star-btn:hover {
@@ -97,7 +112,7 @@
   border: 1px solid var(--cq-border, #1f293d) !important;
   color: var(--cq-text, #f1f5f9) !important;
   border-radius: 0.5rem !important;
-  font-size: 0.9rem !important;
+  font-size: 1rem !important; /* Prevents iOS auto-zoom on mobile */
 }
 
 .feedback-textarea:focus,

@@ -84,6 +84,7 @@ export default function Navbar() {
           </nav>
 
           <div className="navbar-right">
+            {/* Desktop Full Stats */}
             <div className="navbar-stats">
               <span className="navbar-streak" title={`${progress.streak || 0} day streak`}>
                 🔥 {progress.streak || 0}
@@ -95,6 +96,13 @@ export default function Navbar() {
                 LVL {levelInfo.level}
               </span>
             </div>
+
+            {/* Mobile Compact Stats Pill */}
+            <Link to="/profile" className="navbar-mobile-stats" aria-label={`Level ${levelInfo.level}, ${progress.streak || 0} day streak`}>
+              <span className="mobile-stat-streak">🔥 {progress.streak || 0}</span>
+              <span className="mobile-stat-divider">·</span>
+              <span className="mobile-stat-lvl">LVL {levelInfo.level}</span>
+            </Link>
 
             {/* Cloud Sync Status micro badge */}
             <div className="navbar-sync-wrap">
@@ -156,107 +164,108 @@ export default function Navbar() {
             id="mobile-nav"
             className="mobile-nav open"
             aria-label="Mobile navigation"
-            initial={{ opacity: 0, y: -12 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
+            exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="mobile-nav-status-header" style={{ padding: "0.75rem 1rem", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-                <span>🔥 {progress.streak || 0}</span>
+            {/* Safe-area mobile header status card */}
+            <div className="mobile-nav-status-header">
+              <div className="mobile-nav-user-stats">
+                <span>🔥 {progress.streak || 0}d Streak</span>
                 <span>⚡ {progress.xp} XP</span>
                 <span>LVL {levelInfo.level}</span>
               </div>
               <SyncStatusBadge />
             </div>
 
+            <div className="mobile-nav-category-title">Core Quests</div>
             <ul className="mobile-nav-links">
               {navItems.map((item, index) => (
                 <motion.li
                   key={item.to}
-                  initial={{ opacity: 0, x: -16 }}
+                  initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.04 * index, duration: 0.2 }}
+                  transition={{ delay: 0.03 * index, duration: 0.18 }}
                 >
                   <NavLink
                     to={item.to}
                     className={({ isActive }) =>
                       `mobile-nav-link${isActive ? " active" : ""}`
                     }
-                    style={{ minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "space-between" }}
                   >
-                    {item.label}
-                    <span className="arrow" aria-hidden="true">
-                      →
-                    </span>
+                    <span>{item.label}</span>
+                    <span className="arrow" aria-hidden="true">→</span>
                   </NavLink>
                 </motion.li>
               ))}
+            </ul>
 
-              <motion.li
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.24, duration: 0.2 }}
-              >
-                <NavLink
-                  to="/profile"
-                  className={({ isActive }) =>
-                    `mobile-nav-link${isActive ? " active" : ""}`
-                  }
-                  style={{ minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+            <div className="mobile-nav-category-title mt-4">Rankings & Companions</div>
+            <ul className="mobile-nav-links">
+              {[
+                { to: "/leaderboard", label: "Leaderboard", icon: "🏆" },
+                { to: "/achievements", label: "Achievements", icon: "🎖️" },
+                { to: "/mentor", label: "Mentor Companion", icon: "🤖" },
+                { to: "/profile", label: "Player Profile", icon: "🧙‍♂️" },
+              ].map((item, index) => (
+                <motion.li
+                  key={item.to}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.18 + 0.03 * index, duration: 0.18 }}
                 >
-                  Profile
-                  <span className="arrow" aria-hidden="true">
-                    →
-                  </span>
-                </NavLink>
-              </motion.li>
+                  <NavLink
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `mobile-nav-link${isActive ? " active" : ""}`
+                    }
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span aria-hidden="true">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </span>
+                    <span className="arrow" aria-hidden="true">→</span>
+                  </NavLink>
+                </motion.li>
+              ))}
+            </ul>
+
+            <div className="mobile-nav-footer-actions mt-4">
+              <div className="mobile-nav-sound-row">
+                <span className="text-secondary small">Sound Effects</span>
+                <button
+                  type="button"
+                  onClick={handleToggleSound}
+                  className="btn btn-secondary btn-sm"
+                  style={{ minHeight: "40px", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+                  aria-label={soundOn ? "Disable sound effects" : "Enable sound effects"}
+                >
+                  {soundOn ? "🔊 Enabled" : "🔇 Muted"}
+                </button>
+              </div>
 
               {!isAuthenticated ? (
-                <motion.li
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.28, duration: 0.2 }}
-                  style={{ padding: "0.75rem 1rem" }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    openLoginModal();
+                  }}
+                  className="btn btn-primary w-full mt-3"
+                  style={{ minHeight: "48px", fontWeight: 600 }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileOpen(false);
-                      openLoginModal();
-                    }}
-                    style={{
-                      width: "100%",
-                      minHeight: "44px",
-                      padding: "0.75rem",
-                      background: "var(--accent, #6366f1)",
-                      border: "none",
-                      borderRadius: "8px",
-                      color: "#fff",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "0.5rem",
-                    }}
-                  >
-                    <span aria-hidden="true">🛡️</span> Sign In / Register
-                  </button>
-                </motion.li>
+                  <span aria-hidden="true">🛡️</span> Sign In / Register Account
+                </button>
               ) : (
-                <motion.li
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.28, duration: 0.2 }}
-                  style={{ padding: "0.5rem 1rem" }}
-                >
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span>Logged in as <strong>{user.username}</strong></span>
-                  </div>
-                </motion.li>
+                <div className="mobile-nav-logged-in-banner mt-3">
+                  <span>Logged in as <strong>{user.username}</strong></span>
+                  <Link to="/profile" className="btn btn-ghost btn-sm" onClick={() => setMobileOpen(false)}>
+                    View Ledger →
+                  </Link>
+                </div>
               )}
-            </ul>
+            </div>
           </motion.nav>
         )}
       </AnimatePresence>

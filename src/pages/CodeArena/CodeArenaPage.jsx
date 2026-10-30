@@ -43,9 +43,9 @@ export default function CodeArenaPage() {
   const [hintIndex, setHintIndex] = useState(0);
   const [mentorOpen, setMentorOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
-  const [showComplete, setShowComplete] = useState(false);
   const [showFailed, setShowFailed] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [mobileTab, setMobileTab] = useState("editor"); // "mission" | "editor" | "output"
   const saveTimerRef = useRef(null);
 
   // Load challenge + checkpoint
@@ -196,6 +196,9 @@ export default function CodeArenaPage() {
       setLogs([]);
     } finally {
       setRunning(false);
+      if (typeof window !== "undefined" && window.innerWidth <= 768) {
+        setMobileTab("output");
+      }
     }
   }
 
@@ -276,9 +279,45 @@ export default function CodeArenaPage() {
         </div>
       </div>
 
+      {/* Mobile Segmented Workspace Switcher (visible <= 768px) */}
+      <div className="arena-mobile-tabs" role="tablist" aria-label="Arena workspace views">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === "mission"}
+          className={`arena-mobile-tab-btn ${mobileTab === "mission" ? "active" : ""}`}
+          onClick={() => setMobileTab("mission")}
+        >
+          <span aria-hidden="true">📜</span> Brief
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === "editor"}
+          className={`arena-mobile-tab-btn ${mobileTab === "editor" ? "active" : ""}`}
+          onClick={() => setMobileTab("editor")}
+        >
+          <span aria-hidden="true">💻</span> Editor
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === "output"}
+          className={`arena-mobile-tab-btn ${mobileTab === "output" ? "active" : ""}`}
+          onClick={() => setMobileTab("output")}
+        >
+          <span aria-hidden="true">🧪</span> Output
+          {testResults && (
+            <span className={`arena-mobile-tab-badge ${allPassed ? "passed" : "pending"}`}>
+              {testResults.filter((r) => r.success).length}/{testResults.length}
+            </span>
+          )}
+        </button>
+      </div>
+
       <div className="container arena-layout">
         {/* Left: Mission panel */}
-        <aside className="arena-sidebar">
+        <aside className={`arena-sidebar ${mobileTab !== "mission" ? "arena-mobile-hidden" : ""}`}>
           <MissionPanel
             challenge={challenge}
             testResults={testResults}
@@ -289,28 +328,30 @@ export default function CodeArenaPage() {
 
         {/* Right: Editor + Output */}
         <main className="arena-main">
-          <div className="arena-editor-panel">
-            <div className="arena-panel-header">
-              <span className="arena-panel-label">Code Editor</span>
-              <span className="arena-status">
-                {alreadyCompleted ? "✓ Completed" : "● In Progress"}
-              </span>
+          <div className={`arena-editor-section ${mobileTab !== "editor" ? "arena-mobile-hidden" : ""}`}>
+            <div className="arena-editor-panel">
+              <div className="arena-panel-header">
+                <span className="arena-panel-label">Code Editor</span>
+                <span className="arena-status">
+                  {alreadyCompleted ? "✓ Completed" : "● In Progress"}
+                </span>
+              </div>
+              <CodeEditor
+                code={code}
+                onChange={setCode}
+                onRun={handleRun}
+                onSave={handleSave}
+                ariaLabel={`Code editor for ${challenge.title}`}
+              />
             </div>
-            <CodeEditor
-              code={code}
-              onChange={setCode}
-              onRun={handleRun}
-              onSave={handleSave}
-              ariaLabel={`Code editor for ${challenge.title}`}
-            />
+
+            {/* HTML/CSS live preview */}
+            {isHtmlCss && (
+              <HtmlCssPreview code={code} challengeType={challenge.challengeType} />
+            )}
           </div>
 
-          {/* HTML/CSS live preview */}
-          {isHtmlCss && (
-            <HtmlCssPreview code={code} challengeType={challenge.challengeType} />
-          )}
-
-          <div className="arena-bottom-grid">
+          <div className={`arena-bottom-grid ${mobileTab !== "output" ? "arena-mobile-hidden" : ""}`}>
             <Terminal logs={logs} status={terminalStatus} error={terminalError} />
             <TestResults results={testResults} running={running} error={terminalError} />
           </div>
